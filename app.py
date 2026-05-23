@@ -36,12 +36,6 @@ mins = st.number_input(
     step=1
 )
 
-xg = st.number_input(
-    "Expected Goals (xG)",
-    min_value=0.0,
-    step=0.1
-)
-
 xg_avg = st.number_input(
     "xG Per Avg Match",
     min_value=0.0,
@@ -80,7 +74,6 @@ if st.button("Predict Goals"):
         'Matches_Played': [matches_played],
         'Substitution': [substitution],
         'Mins': [mins],
-        'xG': [xg],
         'xG Per Avg Match': [xg_avg],
         'Shots': [shots],
         'OnTarget': [on_target],
