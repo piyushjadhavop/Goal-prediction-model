@@ -224,4 +224,4 @@ This project also strengthened practical skills in Python, model building, debug
 
 # Author
 
-Piyush Jadhav
+Piyush Rajesh Jadhav
