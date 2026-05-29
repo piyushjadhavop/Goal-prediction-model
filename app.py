@@ -82,15 +82,18 @@ if st.button("Predict Goals"):
     st.success(
         f"Predicted Goals: {prediction[0]:.2f}"
     )
-    # -------------------------------
-# BAR VISUALIZATION
+
+
+# -------------------------------
+# INPUT & PREDICTION SUMMARY
 # -------------------------------
 
+st.subheader("📋 Player Input Summary")
 
-feature_df = pd.DataFrame({
-    'Features': [
+summary_df = pd.DataFrame({
+    'Feature': [
         'Matches Played',
-        'Minutes',
+        'Minutes Played',
         'xG Per Avg Match',
         'Shots',
         'On Target',
@@ -98,7 +101,8 @@ feature_df = pd.DataFrame({
         'On Target Per Avg Match',
         'Predicted Goals'
     ],
-    'Values': [
+
+    'Value': [
         matches_played,
         mins,
         xg_avg,
@@ -106,28 +110,34 @@ feature_df = pd.DataFrame({
         on_target,
         shots_avg,
         on_target_avg,
-        prediction[0]
+        round(prediction[0], 2)
     ]
 })
 
-bar_fig = px.bar(
-    feature_df,
-    x='Features',
-    y='Values',
-    text='Values',
-    color='Features',
-    title='Player Statistics & Predicted Goals'
-)
-
-# Improve Layout
-bar_fig.update_layout(
-    xaxis_title="Features",
-    yaxis_title="Values",
-    showlegend=False
-)
-
-# Display Graph
-st.plotly_chart(
-    bar_fig,
+# Display Table
+st.dataframe(
+    summary_df,
     use_container_width=True
 )
+
+
+new_data = pd.DataFrame({
+
+    'Matches_Played': [matches_played],
+    'Mins': [mins],
+    'xG Per Avg Match': [xg_avg],
+    'Shots': [shots],
+    'OnTarget': [on_target],
+    'Shots Per Avg Match': [shots_avg],
+    'On Target Per Avg Match': [on_target_avg]
+})
+
+# Append data into existing CSV
+new_data.to_csv(
+    'user_data.csv',
+    mode='a',
+    header=True,
+    index=False
+)
+
+st.success("New player data saved to data.csv")
