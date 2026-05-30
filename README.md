@@ -42,6 +42,9 @@ The main objective of this project was to understand the complete Machine Learni
 
 The dataset contains football player performance statistics from the 2016 football season.
 
+
+Data was collected from Kaggle and used for analysis in this project.
+
 ### Features Used
 
 * Matches Played
