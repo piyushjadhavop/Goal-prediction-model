@@ -121,7 +121,7 @@ The model was evaluated using regression metrics such as:
 
 * MAE (Mean Absolute Error)
 * RMSE (Root Mean Squared Error)
-* R² Score
+* R² Score (Accuracy)
 
 These metrics helped measure prediction accuracy and model performance.
 
