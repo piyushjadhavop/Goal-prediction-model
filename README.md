@@ -35,6 +35,8 @@ The main objective of this project was to understand the complete Machine Learni
 * Streamlit
 * Plotly
 * Joblib
+* UV (Python Package Manager)
+* UV Virtual Environment (uv venv)
 
 ---
 
