@@ -136,7 +136,7 @@ new_data = pd.DataFrame({
 new_data.to_csv(
     'user_data.csv',
     mode='a',
-    header=True,
+    header=False,
     index=False
 )
 
