@@ -35,12 +35,17 @@ The main objective of this project was to understand the complete Machine Learni
 * Streamlit
 * Plotly
 * Joblib
+* UV (Python Package Manager)
+* UV Virtual Environment (uv venv)
 
 ---
 
 # Dataset Description
 
 The dataset contains football player performance statistics from the 2016 football season.
+
+
+Data was collected from Kaggle and used for analysis in this project.
 
 ### Features Used
 
@@ -121,7 +126,7 @@ The model was evaluated using regression metrics such as:
 
 * MAE (Mean Absolute Error)
 * RMSE (Root Mean Squared Error)
-* R² Score
+* R² Score (Accuracy)
 
 These metrics helped measure prediction accuracy and model performance.
 
@@ -224,4 +229,4 @@ This project also strengthened practical skills in Python, model building, debug
 
 # Author
 
-Piyush Jadhav
+Piyush Rajesh Jadhav
