@@ -221,7 +221,6 @@ The project combines:
 * Frontend Development
 
 into one complete end-to-end application.
-
 This project also strengthened practical skills in Python, model building, debugging, data analysis, and deployment workflows.
 
 ---
