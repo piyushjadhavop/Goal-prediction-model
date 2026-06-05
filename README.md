@@ -14,7 +14,7 @@ The main objective of this project was to understand the complete Machine Learni
 * Learn practical Machine Learning workflow.
 * Build an interactive frontend for user input and predictions.
 * Visualize player statistics and prediction outputs.
-* Deploy a user-friendly prediction system using Streamlit
+* Deploy a user-friendly prediction system using Streamlit.
 
 ---
 
