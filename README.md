@@ -73,7 +73,7 @@ Football player statistical data was collected and loaded into a Pandas DataFram
 
 ## 2. Data Preprocessing
 
-Several preprocessing steps were performed:
+Several preprocessing steps were performed:-
 
 * Handling missing values
 * Cleaning column names
