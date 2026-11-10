@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import numpy as np
 import pandas as pd
+from pathlib import Path
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
@@ -208,6 +209,232 @@ def rating(goals: float) -> tuple:
     if goals >= 4:    return "Decent 👍", "#FF6B35"
     return "Needs Improvement 📈", "#FF2D78"
 
+def _normalized_column_name(column: str) -> str:
+    return "".join(character for character in str(column).casefold() if character.isalnum())
+
+def _find_player_column(data: pd.DataFrame):
+    name_columns = {"playername", "playernames", "name", "player"}
+    return next((column for column in data.columns
+                 if _normalized_column_name(column) in name_columns), None)
+
+@st.cache_data(show_spinner=False)
+def load_comparison_data():
+    data_dir = Path(__file__).resolve().parent
+    source_path = data_dir / "Data.csv"
+    data = pd.read_csv(source_path)
+    player_column = _find_player_column(data)
+
+    if player_column is None:
+        raise ValueError("Data.csv does not contain a player-name column.")
+
+    data[player_column] = data[player_column].astype("string").str.strip()
+    data = data.dropna(subset=[player_column])
+    data = data[data[player_column] != ""].drop_duplicates()
+    return data, player_column, source_path.name
+
+def aggregate_comparison_records(data: pd.DataFrame, player_column: str) -> pd.DataFrame:
+    year_column = next((column for column in data.columns
+                        if _normalized_column_name(column) in {"year", "season", "seasonx"}), None)
+    numeric_columns = [column for column in data.select_dtypes(include="number").columns
+                       if column != year_column]
+    rate_columns = [column for column in numeric_columns
+                    if "per" in _normalized_column_name(column)
+                    or "avg" in _normalized_column_name(column)]
+    derived_rates = {
+        "xgperavgmatch": ("xG", "Matches_Played"),
+        "shotsperavgmatch": ("Shots", "Matches_Played"),
+        "ontargetperavgmatch": ("OnTarget", "Matches_Played"),
+    }
+    records = []
+
+    for player, player_rows in data.groupby(player_column, sort=False):
+        record = {player_column: player}
+        for column in numeric_columns:
+            if column not in rate_columns:
+                record[column] = pd.to_numeric(player_rows[column], errors="coerce").sum(min_count=1)
+
+        for column in rate_columns:
+            normalized_column = _normalized_column_name(column)
+            numerator_column, denominator_column = derived_rates.get(normalized_column, (None, None))
+            if numerator_column in record and denominator_column in record:
+                denominator = record[denominator_column]
+                record[column] = (record[numerator_column] / denominator
+                                  if pd.notna(denominator) and denominator != 0 else np.nan)
+            elif "Matches_Played" in player_rows.columns:
+                values = pd.to_numeric(player_rows[column], errors="coerce")
+                weights = pd.to_numeric(player_rows["Matches_Played"], errors="coerce")
+                valid = values.notna() & weights.notna() & (weights > 0)
+                record[column] = (np.average(values[valid], weights=weights[valid])
+                                  if valid.any() else np.nan)
+            else:
+                record[column] = pd.to_numeric(player_rows[column], errors="coerce").mean()
+
+        for column in data.columns:
+            if column == player_column or column in numeric_columns:
+                continue
+            values = player_rows[column].dropna().astype(str).unique()
+            record[column] = " / ".join(values)
+        if year_column and year_column in numeric_columns:
+            years = player_rows[year_column].dropna().astype(str).unique()
+            record[year_column] = " / ".join(years)
+        records.append(record)
+
+    return pd.DataFrame(records)
+
+def render_player_comparison():
+    st.markdown("#### Player Performance Comparison")
+    try:
+        data, player_column, source_name = load_comparison_data()
+    except (OSError, ValueError, pd.errors.ParserError, pd.errors.EmptyDataError) as error:
+        st.error(f"Unable to load player comparison data: {error}")
+        return
+
+    st.caption(f"Data source: {source_name} · Exact duplicate records are removed.")
+
+    filtered_data = data.copy()
+    year_column = next((column for column in filtered_data.columns
+                        if _normalized_column_name(column) in {"year", "season", "seasonx"}), None)
+    league_column = next((column for column in filtered_data.columns
+                          if _normalized_column_name(column) in {"league", "competition"}), None)
+    filter_columns = st.columns(2)
+
+    if year_column:
+        seasons = sorted(filtered_data[year_column].dropna().unique().tolist(), reverse=True)
+        season_options = ["All seasons", *seasons]
+        chosen_season = filter_columns[0].selectbox(
+            "Season", season_options, index=1 if seasons else 0
+        )
+        if chosen_season != "All seasons":
+            filtered_data = filtered_data[filtered_data[year_column] == chosen_season]
+
+    if league_column:
+        competitions = sorted(filtered_data[league_column].dropna().astype(str).unique().tolist())
+        competition_options = ["All competitions", *competitions]
+        chosen_competition = filter_columns[1].selectbox("Competition", competition_options)
+        if chosen_competition != "All competitions":
+            filtered_data = filtered_data[
+                filtered_data[league_column].astype(str) == chosen_competition
+            ]
+
+    player_options = sorted(filtered_data[player_column].dropna().unique().tolist(), key=str.casefold)
+    if not player_options:
+        st.warning("No players are available for the selected season and competition.")
+        return
+
+    selected_players = st.multiselect(
+        "Search and select players",
+        options=player_options,
+        placeholder="Type a player name, then select at least two players",
+        help="Search by name and select two or more players to compare their recorded statistics.",
+    )
+    if selected_players:
+        st.caption("Selected players: " + " · ".join(selected_players))
+    if len(selected_players) < 2:
+        st.info("Select at least two players to see the comparison dashboard.")
+        return
+
+    selected_data = filtered_data[filtered_data[player_column].isin(selected_players)]
+    comparison = aggregate_comparison_records(selected_data, player_column)
+    if len(comparison) < 2:
+        st.warning("At least two selected players need records in the chosen filters.")
+        return
+
+    stat_columns = [column for column in comparison.select_dtypes(include="number").columns
+                    if column != year_column]
+    if not stat_columns:
+        st.warning("The selected records do not contain numerical performance statistics.")
+        return
+
+    st.markdown("##### Player Profiles")
+    profile_columns = st.columns(min(len(selected_players), 3))
+    for index, player in enumerate(selected_players):
+        player_record = comparison[comparison[player_column] == player].iloc[0]
+        with profile_columns[index % len(profile_columns)]:
+            with st.expander(player, expanded=True):
+                profile_values = player_record.drop(labels=[player_column]).map(
+                    lambda value: "" if pd.isna(value) else str(value)
+                ).astype("string").rename("Value")
+                st.dataframe(profile_values.to_frame(), use_container_width=True)
+
+    st.markdown("##### Side-by-Side Statistics")
+    stats_table = comparison.set_index(player_column)[stat_columns].transpose()
+    stats_table.index.name = "Statistic"
+    st.dataframe(stats_table, use_container_width=True)
+
+    preferred_metrics = {"goals", "assists", "shots", "xg", "mins", "matchesplayed", "ontarget"}
+    default_metrics = [column for column in stat_columns
+                       if _normalized_column_name(column) in preferred_metrics][:6]
+    if not default_metrics:
+        default_metrics = stat_columns[:min(6, len(stat_columns))]
+    chart_metrics = st.multiselect(
+        "Metrics to chart",
+        options=stat_columns,
+        default=default_metrics,
+    )
+
+    if chart_metrics:
+        chart_data = comparison[[player_column, *chart_metrics]].melt(
+            id_vars=player_column, var_name="Metric", value_name="Value"
+        )
+        fig_comparison = px.bar(
+            chart_data,
+            x="Metric",
+            y="Value",
+            color=player_column,
+            barmode="group",
+            title="Recorded Statistics",
+        )
+        fig_comparison.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            legend_title_text="Player",
+            xaxis_title="Statistic",
+            yaxis_title="Recorded value",
+        )
+        st.plotly_chart(fig_comparison, use_container_width=True)
+
+        values = comparison[chart_metrics].apply(pd.to_numeric, errors="coerce")
+        minimums = values.min()
+        spans = values.max() - minimums
+        normalized = values.subtract(minimums).divide(spans.where(spans != 0))
+        for metric in chart_metrics:
+            if pd.notna(spans[metric]) and spans[metric] == 0:
+                normalized[metric] = values[metric].where(values[metric].isna(), 0.5)
+
+        fig_radar = go.Figure()
+        for row_index, player in enumerate(comparison[player_column]):
+            radar_values = normalized.iloc[row_index].tolist()
+            fig_radar.add_trace(go.Scatterpolar(
+                r=radar_values + [radar_values[0]],
+                theta=chart_metrics + [chart_metrics[0]],
+                fill="toself",
+                name=player,
+            ))
+        fig_radar.update_layout(
+            template="plotly_dark",
+            title="Normalized Comparison (0–1 across selected players)",
+            polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+            paper_bgcolor="rgba(0,0,0,0)",
+            margin=dict(t=55, b=30, l=50, r=50),
+        )
+        st.plotly_chart(fig_radar, use_container_width=True)
+        st.caption(
+            "Radar values are normalized only for visual comparison among these players; "
+            "they are not official player ratings."
+        )
+
+        st.markdown("##### Metric Leaders")
+        for metric in chart_metrics:
+            valid_values = comparison[[player_column, metric]].dropna(subset=[metric])
+            if valid_values.empty:
+                st.write(f"**{metric}:** no recorded values for the selected players.")
+                continue
+            highest = valid_values[metric].max()
+            leaders = valid_values.loc[valid_values[metric] == highest, player_column].tolist()
+            st.write(f"**{metric}:** {', '.join(leaders)} ({highest:g})")
+        st.caption("A metric leader is not an overall ranking; compare the statistics in context.")
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
@@ -277,7 +504,13 @@ predicted_goals = predict(inputs)
 r_label, r_color = rating(predicted_goals)
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4 = st.tabs(["🎯 Prediction", "📊 Feature Importance", "🔬 Scenario Builder", "📋 Player Report"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🎯 Prediction",
+    "📊 Feature Importance",
+    "🔬 Scenario Builder",
+    "📋 Player Report",
+    "👥 Player Comparison",
+])
 
 # ══════════════════════════════════════════════════════════════
 # TAB 1 — Prediction
@@ -651,6 +884,9 @@ with tab4:
         legend=dict(bgcolor='rgba(0,0,0,0)', font=dict(color='rgba(255,255,255,0.6)')),
     )
     st.plotly_chart(fig_compare, use_container_width=True, config={'displayModeBar': False})
+
+with tab5:
+    render_player_comparison()
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("""
