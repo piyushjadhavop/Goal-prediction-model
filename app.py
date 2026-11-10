@@ -20,103 +20,157 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap');
 
+:root {
+    --ink: #eaf0e8;
+    --muted: #91a098;
+    --lime: #c8f36a;
+    --cyan: #66d8d1;
+    --line: rgba(209, 229, 216, 0.11);
+    --panel: rgba(17, 26, 21, 0.88);
+}
+
 html, body, [class*="css"] {
     font-family: 'Space Grotesk', sans-serif;
 }
 
-/* Dark gradient background */
 .stApp {
-    background: linear-gradient(135deg, #0A0A0F 0%, #0D0D1A 50%, #0A0F0A 100%);
+    color: var(--ink);
+    background:
+        radial-gradient(ellipse at 86% 0%, rgba(37, 91, 61, 0.20), transparent 34%),
+        linear-gradient(145deg, #080d0a 0%, #0b110e 50%, #080c0a 100%);
 }
 
-/* Sidebar */
+header[data-testid="stHeader"] {
+    background: rgba(8, 13, 10, 0.72);
+}
+
+div[data-testid="stAppViewContainer"] > .main .block-container {
+    max-width: 1560px;
+    padding: 1.4rem 2.4rem 3rem;
+}
+
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #111118 0%, #0e1a0e 100%);
-    border-right: 1px solid rgba(57,255,20,0.15);
+    background: linear-gradient(180deg, #101813 0%, #0b110e 100%);
+    border-right: 1px solid var(--line);
 }
 
-/* Metric cards */
-div[data-testid="metric-container"] {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 12px 16px;
+section[data-testid="stSidebar"] > div {
+    padding-top: 1.2rem;
 }
 
-/* Sliders accent */
+section[data-testid="stSidebar"] h3 {
+    color: var(--lime);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+div[data-testid="stMetric"] {
+    min-height: 112px;
+    padding: 18px 20px;
+    background: linear-gradient(145deg, rgba(22, 33, 27, 0.94), rgba(15, 23, 19, 0.9));
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
+    transition: border-color 180ms ease, transform 180ms ease;
+}
+
+div[data-testid="stMetric"]:hover {
+    border-color: rgba(200, 243, 106, 0.36);
+    transform: translateY(-2px);
+}
+
+div[data-testid="stMetricLabel"] {
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+div[data-testid="stMetricValue"] {
+    color: var(--ink);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.02em;
+}
+
 .stSlider > div > div > div > div {
-    background: #39FF14 !important;
+    background: var(--lime) !important;
 }
 
-/* Buttons */
 .stButton > button {
-    background: linear-gradient(135deg, #39FF14, #00D4FF);
-    color: #0A0A0F;
+    min-height: 44px;
+    background: var(--lime);
+    color: #10170e;
     font-weight: 700;
     font-family: 'Space Grotesk', sans-serif;
     border: none;
-    border-radius: 10px;
-    padding: 12px 28px;
-    font-size: 15px;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
+    border-radius: 7px;
+    padding: 10px 18px;
+    font-size: 14px;
+    transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
     width: 100%;
 }
 
 .stButton > button:hover {
+    background: #d7ff83;
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(57,255,20,0.4);
+    box-shadow: 0 8px 24px rgba(161, 210, 79, 0.18);
 }
 
-/* Tab styling */
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(255,255,255,0.04);
-    border-radius: 10px;
-    padding: 4px;
-    gap: 4px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 5px;
+    gap: 3px;
 }
 
 .stTabs [data-baseweb="tab"] {
-    border-radius: 8px;
-    color: rgba(255,255,255,0.5);
+    min-height: 42px;
+    border-radius: 5px;
+    color: var(--muted);
     font-weight: 600;
     font-family: 'Space Grotesk', sans-serif;
+    transition: color 160ms ease, background 160ms ease;
 }
 
 .stTabs [aria-selected="true"] {
-    background: rgba(57,255,20,0.15) !important;
-    color: #39FF14 !important;
+    background: rgba(200, 243, 106, 0.11) !important;
+    color: var(--lime) !important;
 }
 
-/* Headers */
-h1, h2, h3 { font-family: 'Space Grotesk', sans-serif !important; }
+h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif !important; }
+h1, h2, h3 { color: var(--ink); }
+h4 { color: var(--lime); }
 
-/* Number inputs */
+div[data-baseweb="select"] > div,
+div[data-testid="stTextInput"] input,
 div[data-testid="stNumberInput"] input {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    color: white;
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(209, 229, 216, 0.14);
+    border-radius: 6px;
+    color: var(--ink);
 }
 
-/* Section dividers */
-hr { border-color: rgba(255,255,255,0.08); }
+hr { border-color: var(--line); }
 
-/* Result box */
 .result-box {
-    background: linear-gradient(135deg, rgba(57,255,20,0.1), rgba(0,212,255,0.08));
-    border: 1.5px solid rgba(57,255,20,0.4);
-    border-radius: 16px;
-    padding: 28px 32px;
+    background: linear-gradient(145deg, rgba(200, 243, 106, 0.09), rgba(102, 216, 209, 0.045));
+    border: 1px solid rgba(200, 243, 106, 0.32);
+    border-radius: 10px;
+    padding: 26px 28px;
     text-align: center;
     margin: 16px 0;
+    box-shadow: inset 0 1px rgba(255,255,255,0.04), 0 18px 40px rgba(0,0,0,0.18);
 }
 
 .result-number {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 80px;
+    font-size: 76px;
     line-height: 1;
-    background: linear-gradient(135deg, #39FF14, #00D4FF);
+    color: var(--lime);
+    background: linear-gradient(135deg, var(--lime), var(--cyan));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -125,42 +179,86 @@ hr { border-color: rgba(255,255,255,0.08); }
 .result-label {
     font-size: 13px;
     font-weight: 600;
-    letter-spacing: 3px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
+    color: var(--muted);
     margin-top: 4px;
 }
 
 .rating-badge {
     display: inline-block;
-    padding: 6px 20px;
+    padding: 6px 14px;
     border-radius: 100px;
     font-weight: 700;
     font-size: 13px;
-    letter-spacing: 1px;
+    letter-spacing: 0.03em;
     margin-top: 12px;
 }
 
-/* Player card */
 .player-header {
-    background: linear-gradient(135deg, rgba(123,47,190,0.2), rgba(255,45,120,0.1));
-    border: 1px solid rgba(123,47,190,0.3);
-    border-radius: 16px;
-    padding: 20px 24px;
+    background: linear-gradient(120deg, rgba(102, 216, 209, 0.08), rgba(255,255,255,0.02));
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 18px 20px;
     margin-bottom: 16px;
 }
 
-/* Info cards */
 .info-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
     padding: 16px;
     margin: 8px 0;
 }
 
-/* Comparison table */
-.stDataFrame { border-radius: 12px; overflow: hidden; }
+.stDataFrame { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 0 0 16px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+}
+.brand-lockup { display: flex; align-items: center; gap: 11px; }
+.brand-mark {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: rgba(200, 243, 106, 0.12);
+    color: var(--lime);
+    font-size: 20px;
+}
+.brand-name { color: var(--ink); font-size: 17px; font-weight: 700; letter-spacing: 0.02em; }
+.brand-subtitle { color: var(--muted); font-size: 11px; }
+.model-status {
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.model-status span { color: var(--lime); }
+.welcome-kicker {
+    color: var(--lime);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.welcome-title { margin: 6px 0 4px; color: var(--ink); font-size: 29px; font-weight: 700; }
+.welcome-copy { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+
+@media (max-width: 760px) {
+    div[data-testid="stAppViewContainer"] > .main .block-container { padding: 1rem 1rem 2rem; }
+    .topbar { align-items: flex-start; }
+    .model-status { text-align: right; }
+    .welcome-title { font-size: 24px; }
+    .stTabs [data-baseweb="tab"] { font-size: 12px; }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -484,24 +582,120 @@ inputs = {
 
 # ── Main Content ──────────────────────────────────────────────────────────────
 st.markdown("""
-<div style='display:flex; align-items:center; gap:14px; margin-bottom:8px;'>
-    <div style='font-size:36px;'>⚽</div>
-    <div>
-        <div style='font-family:"Space Grotesk",sans-serif; font-size:32px; font-weight:800;
-                    background:linear-gradient(135deg,#39FF14,#00D4FF,#FF2D78);
-                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;'>
-            GoalIQ — Football Goal Predictor
-        </div>
-        <div style='font-size:13px; color:rgba(255,255,255,0.45); letter-spacing:1px;'>
-            XGBoost · Season-level performance analysis
-        </div>
+<div class="topbar">
+    <div class="brand-lockup">
+        <div class="brand-mark">⚽</div>
+        <div><div class="brand-name">GOALIQ</div><div class="brand-subtitle">Football intelligence</div></div>
     </div>
+    <div class="model-status"><span>●</span> XGBoost model active</div>
 </div>
+<div class="welcome-kicker">Performance workspace</div>
+<div class="welcome-title">Football, measured with clarity.</div>
+<div class="welcome-copy">Explore recorded player performance, compare seasons, and model goal output.</div>
 """, unsafe_allow_html=True)
+
+try:
+    analytics_data, analytics_player_column, analytics_source = load_comparison_data()
+except (OSError, ValueError, pd.errors.ParserError, pd.errors.EmptyDataError):
+    analytics_data = pd.DataFrame()
+    analytics_player_column = None
+    analytics_source = None
+
+if not analytics_data.empty and analytics_player_column:
+    normalized_columns = {
+        _normalized_column_name(column): column for column in analytics_data.columns
+    }
+    goals_column = normalized_columns.get("goals")
+    season_column = next((normalized_columns[key] for key in ("year", "season", "seasonx")
+                          if key in normalized_columns), None)
+    competition_column = next((normalized_columns[key] for key in ("league", "competition")
+                               if key in normalized_columns), None)
+    kpi_columns = st.columns(4)
+    kpi_columns[0].metric("Player records", f"{len(analytics_data):,}")
+    kpi_columns[1].metric("Unique players", f"{analytics_data[analytics_player_column].nunique():,}")
+    kpi_columns[2].metric("Seasons", f"{analytics_data[season_column].nunique():,}" if season_column else "—")
+    kpi_columns[3].metric("Competitions", f"{analytics_data[competition_column].nunique():,}" if competition_column else "—")
+
+    chart_columns = st.columns([1.25, 1], gap="large")
+    if goals_column and season_column:
+        with chart_columns[0]:
+            st.markdown("#### Scoring across seasons")
+            season_goals = analytics_data.groupby(season_column, as_index=False)[goals_column].sum()
+            season_goals = season_goals.sort_values(season_column)
+            season_figure = px.line(
+                season_goals,
+                x=season_column,
+                y=goals_column,
+                markers=True,
+                labels={season_column: "Season", goals_column: "Recorded goals"},
+            )
+            season_figure.update_traces(
+                line_color="#c8f36a", line_width=3,
+                marker=dict(size=8, color="#66d8d1"),
+            )
+            season_figure.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                height=280,
+                margin=dict(t=16, b=35, l=12, r=12),
+                font=dict(family="Space Grotesk", color="#aab7ae"),
+                xaxis=dict(showgrid=False),
+                yaxis=dict(gridcolor="rgba(255,255,255,0.07)"),
+            )
+            st.plotly_chart(season_figure, use_container_width=True, config={"displayModeBar": False})
+    if goals_column:
+        with chart_columns[1]:
+            st.markdown("#### Leading scorers in this dataset")
+            top_scorers = (
+                analytics_data.groupby(analytics_player_column, as_index=False)[goals_column]
+                .sum().nlargest(8, goals_column).sort_values(goals_column)
+            )
+            scorer_figure = px.bar(
+                top_scorers,
+                x=goals_column,
+                y=analytics_player_column,
+                orientation="h",
+                labels={goals_column: "Recorded goals", analytics_player_column: "Player"},
+                color_discrete_sequence=["#66d8d1"],
+            )
+            scorer_figure.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                height=280,
+                margin=dict(t=16, b=35, l=12, r=12),
+                font=dict(family="Space Grotesk", color="#aab7ae"),
+                xaxis=dict(gridcolor="rgba(255,255,255,0.07)"),
+                yaxis=dict(showgrid=False),
+                showlegend=False,
+            )
+            st.plotly_chart(scorer_figure, use_container_width=True, config={"displayModeBar": False})
+    st.caption(
+        f"Overview uses recorded values from {analytics_source}; totals reflect records in this dataset, not career totals."
+    )
+else:
+    st.warning("The dataset overview is unavailable. Check that Data.csv is present and includes player and goals columns.")
+
+st.markdown("#### Analysis tools")
 
 # Auto-predict on any input change
 predicted_goals = predict(inputs)
 r_label, r_color = rating(predicted_goals)
+
+if "prediction_history" not in st.session_state:
+    st.session_state.prediction_history = []
+if predict_btn:
+    st.session_state.prediction_history.insert(0, {
+        "Recorded at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
+        "Player": player_name,
+        "Predicted goals": round(predicted_goals, 1),
+        "Matches": matches,
+        "Minutes": mins,
+        "Shots": shots,
+        "Shots on target": ontarget,
+    })
+    st.session_state.prediction_history = st.session_state.prediction_history[:8]
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
@@ -611,7 +805,7 @@ with tab1:
             stat_data.append({
                 "": FEAT_ICONS[f],
                 "Stat": FEAT_LABELS[f],
-                "Value": inputs[f] if isinstance(inputs[f], int) else f"{inputs[f]:.2f}",
+                "Value": str(inputs[f]) if isinstance(inputs[f], int) else f"{inputs[f]:.2f}",
                 "Importance": f"{FI_DICT[f]*100:.1f}%"
             })
         df_stats = pd.DataFrame(stat_data)
@@ -884,6 +1078,16 @@ with tab4:
         legend=dict(bgcolor='rgba(0,0,0,0)', font=dict(color='rgba(255,255,255,0.6)')),
     )
     st.plotly_chart(fig_compare, use_container_width=True, config={'displayModeBar': False})
+
+    st.markdown("#### Recent prediction history")
+    if st.session_state.prediction_history:
+        st.dataframe(
+            pd.DataFrame(st.session_state.prediction_history),
+            use_container_width=True,
+            hide_index=True,
+        )
+    else:
+        st.info("Your saved predictions will appear here after you select Predict Goals in the sidebar.")
 
 with tab5:
     render_player_comparison()
